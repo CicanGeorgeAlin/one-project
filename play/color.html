@@ -1,0 +1,1766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+
+<title>ONE COLOR</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+}
+
+html,body{
+    margin:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    background:#000;
+    font-family:Arial,sans-serif;
+    touch-action:none;
+}
+
+body{
+    position:relative;
+}
+
+/* =========================
+   GAME
+========================= */
+
+.one{
+    position:absolute;
+    border-radius:50%;
+    background:#fff;
+    transform:translate3d(-50%,-50%,0);
+    pointer-events:none;
+    will-change:transform,width,height;
+    box-shadow:0 0 22px rgba(255,255,255,.8);
+}
+
+.trail{
+    position:absolute;
+    width:4px;
+    height:4px;
+    border-radius:50%;
+    pointer-events:none;
+    opacity:.65;
+    animation:trailFade 900ms linear forwards;
+}
+
+@keyframes trailFade{
+    from{opacity:.65}
+    to{opacity:0}
+}
+
+.merge-pulse{
+    position:absolute;
+    width:20px;
+    height:20px;
+    border-radius:50%;
+    transform:translate(-50%,-50%) scale(.2);
+    pointer-events:none;
+    opacity:.8;
+    animation:mergePulse 700ms ease-out forwards;
+}
+
+@keyframes mergePulse{
+    0%{
+        transform:translate(-50%,-50%) scale(.2);
+        opacity:.8;
+    }
+    100%{
+        transform:translate(-50%,-50%) scale(5);
+        opacity:0;
+    }
+}
+
+/* =========================
+   TOP BUTTONS
+========================= */
+
+.top{
+    position:fixed;
+    top:12px;
+    left:12px;
+    right:12px;
+    display:flex;
+    justify-content:space-between;
+    z-index:20;
+    pointer-events:none;
+}
+
+button{
+    border:0;
+    outline:0;
+    color:#fff;
+    background:rgba(25,25,25,.88);
+    border:1px solid rgba(255,255,255,.15);
+    border-radius:12px;
+    padding:10px 14px;
+    font-size:12px;
+    font-weight:bold;
+    letter-spacing:1px;
+    touch-action:manipulation;
+}
+
+.top button{
+    pointer-events:auto;
+}
+
+button:active{
+    transform:scale(.96);
+}
+
+/* =========================
+   COLOR PANEL
+========================= */
+
+#colorPanel{
+    position:fixed;
+    left:50%;
+    bottom:12px;
+    transform:translateX(-50%);
+    width:min(88vw,330px);
+    max-height:calc(100vh - 80px);
+    overflow:auto;
+
+    padding:14px;
+    border-radius:20px;
+
+    background:rgba(15,15,15,.97);
+    border:1px solid rgba(255,255,255,.15);
+
+    box-shadow:
+        0 12px 40px rgba(0,0,0,.8),
+        0 0 25px rgba(255,255,255,.05);
+
+    z-index:100;
+    display:none;
+
+    touch-action:auto;
+    overscroll-behavior:contain;
+}
+
+#colorPanel.open{
+    display:block;
+}
+
+.panelTitle{
+    text-align:center;
+    color:#fff;
+    font-size:11px;
+    font-weight:bold;
+    letter-spacing:2px;
+    margin-bottom:12px;
+}
+
+/* =========================
+   COLOR PICKER
+========================= */
+
+.pickerArea{
+    display:flex;
+    justify-content:center;
+    margin-bottom:12px;
+}
+
+#wheel{
+    position:relative;
+    width:184px;
+    height:184px;
+    border-radius:50%;
+    flex:none;
+
+    /* Hue */
+    background:
+        radial-gradient(
+            circle at center,
+            transparent 0%,
+            rgba(255,255,255,0) 0%
+        ),
+        conic-gradient(
+            #ff0000 0deg,
+            #ffff00 60deg,
+            #00ff00 120deg,
+            #00ffff 180deg,
+            #0000ff 240deg,
+            #ff00ff 300deg,
+            #ff0000 360deg
+        );
+
+    overflow:hidden;
+
+    touch-action:none;
+    user-select:none;
+}
+
+/*
+  White in the center -> full saturation at edge.
+*/
+#wheel::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    border-radius:50%;
+
+    background:
+        radial-gradient(
+            circle,
+            #fff 0%,
+            rgba(255,255,255,0) 72%
+        );
+
+    pointer-events:none;
+}
+
+/*
+  Brightness/shading overlay.
+  Kept transparent at top and darker at bottom.
+*/
+#wheel::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    border-radius:50%;
+
+    background:
+        linear-gradient(
+            to bottom,
+            rgba(0,0,0,0) 0%,
+            rgba(0,0,0,0) 45%,
+            rgba(0,0,0,.15) 70%,
+            rgba(0,0,0,.55) 100%
+        );
+
+    pointer-events:none;
+}
+
+#wheelSelector{
+    position:absolute;
+    width:18px;
+    height:18px;
+    border-radius:50%;
+
+    transform:translate(-50%,-50%);
+
+    border:2px solid #fff;
+
+    box-shadow:
+        0 0 0 2px rgba(0,0,0,.7),
+        0 0 8px rgba(255,255,255,.9);
+
+    pointer-events:none;
+    z-index:5;
+}
+
+/* =========================
+   BRIGHTNESS
+========================= */
+
+.brightnessLabel{
+    display:flex;
+    justify-content:space-between;
+    color:#aaa;
+    font-size:10px;
+    margin:4px 2px 6px;
+}
+
+#brightness{
+    width:100%;
+    height:24px;
+    margin:0;
+    accent-color:#fff;
+    touch-action:auto;
+}
+
+/* =========================
+   CURRENT COLOR
+========================= */
+
+.current{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin:10px 0 12px;
+}
+
+#currentSwatch{
+    width:38px;
+    height:38px;
+    border-radius:50%;
+    border:1px solid rgba(255,255,255,.25);
+    flex:none;
+}
+
+.currentInfo{
+    min-width:0;
+}
+
+#colorName{
+    color:#fff;
+    font-size:12px;
+    font-weight:bold;
+}
+
+#hexValue{
+    color:#888;
+    font-size:10px;
+    margin-top:3px;
+    font-family:monospace;
+}
+
+/* =========================
+   QUICK COLORS
+========================= */
+
+.quickTitle{
+    color:#777;
+    font-size:9px;
+    letter-spacing:1px;
+    margin-bottom:7px;
+}
+
+.quickColors{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:6px;
+}
+
+.quick{
+    min-height:34px;
+    padding:7px 3px;
+    border-radius:9px;
+    font-size:9px;
+    letter-spacing:.4px;
+
+    border:1px solid rgba(255,255,255,.12);
+}
+
+/* =========================
+   BOTTOM ACTIONS
+========================= */
+
+.actions{
+    display:flex;
+    gap:7px;
+    margin-top:12px;
+}
+
+.actions button{
+    flex:1;
+}
+
+.done{
+    background:#fff;
+    color:#000;
+}
+
+.reset{
+    background:#151515;
+}
+
+/* =========================
+   SCROLLBAR
+========================= */
+
+#colorPanel::-webkit-scrollbar{
+    width:3px;
+}
+
+#colorPanel::-webkit-scrollbar-thumb{
+    background:#444;
+    border-radius:5px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="top">
+    <button id="colorsBtn">COLORS</button>
+    <button id="resetBtn">RESET</button>
+</div>
+
+<div id="colorPanel">
+
+    <div class="panelTitle">CHOOSE COLOR</div>
+
+    <div class="pickerArea">
+        <div id="wheel">
+            <div id="wheelSelector"></div>
+        </div>
+    </div>
+
+    <div class="brightnessLabel">
+        <span>BRIGHTNESS</span>
+        <span id="brightnessValue">100%</span>
+    </div>
+
+    <input
+        id="brightness"
+        type="range"
+        min="0"
+        max="100"
+        value="100"
+    >
+
+    <div class="current">
+        <div id="currentSwatch"></div>
+
+        <div class="currentInfo">
+            <div id="colorName">WHITE</div>
+            <div id="hexValue">#FFFFFF</div>
+        </div>
+    </div>
+
+    <div class="quickTitle">QUICK COLORS</div>
+
+    <div class="quickColors">
+
+        <button class="quick"
+                data-color="#ffffff"
+                style="background:#fff;color:#000">
+            WHITE
+        </button>
+
+        <button class="quick"
+                data-color="#000000"
+                style="background:#000;color:#fff">
+            BLACK
+        </button>
+
+        <button class="quick"
+                data-color="#ff0000"
+                style="background:#f00;color:#fff">
+            RED
+        </button>
+
+        <button class="quick"
+                data-color="#ffff00"
+                style="background:#ff0;color:#000">
+            YELLOW
+        </button>
+
+        <button class="quick"
+                data-color="#0000ff"
+                style="background:#00f;color:#fff">
+            BLUE
+        </button>
+
+        <button class="quick"
+                data-color="#ff8000"
+                style="background:#ff8000;color:#fff">
+            ORANGE
+        </button>
+
+        <button class="quick"
+                data-color="#00b050"
+                style="background:#00b050;color:#fff">
+            GREEN
+        </button>
+
+        <button class="quick"
+                data-color="#8a2be2"
+                style="background:#8a2be2;color:#fff">
+            PURPLE
+        </button>
+
+    </div>
+
+    <div class="actions">
+        <button class="reset" id="cancelBtn">CANCEL</button>
+        <button class="done" id="doneBtn">DONE</button>
+    </div>
+
+</div>
+
+<script>
+/* ==========================================
+   ONE COLOR — DIRECTIONAL SPLIT LITE
+========================================== */
+
+const MIN_SIZE = 34;
+const MAX_SIZE = 180;
+
+const DOUBLE_TAP_TIME = 350;
+
+const TRAIL_DISTANCE = 35;
+const TRAIL_DISTANCE_SQ =
+    TRAIL_DISTANCE * TRAIL_DISTANCE;
+
+const MERGE_DISTANCE = 20;
+const MERGE_DISTANCE_SQ =
+    MERGE_DISTANCE * MERGE_DISTANCE;
+
+const MAGNETIC_DISTANCE = 180;
+const MAGNETIC_DISTANCE_SQ =
+    MAGNETIC_DISTANCE * MAGNETIC_DISTANCE;
+
+const MAGNETIC_STRENGTH = 0.045;
+
+const DEFAULT_COLOR = "#ffffff";
+
+let ones = [];
+let selectedOne = null;
+let isHolding = false;
+let lastTapTime = 0;
+
+let pickerHue = 0;
+let pickerSaturation = 0;
+let pickerBrightness = 100;
+
+let pickerStartColor = DEFAULT_COLOR;
+
+const colorPanel =
+    document.getElementById("colorPanel");
+
+const colorsBtn =
+    document.getElementById("colorsBtn");
+
+const resetBtn =
+    document.getElementById("resetBtn");
+
+const doneBtn =
+    document.getElementById("doneBtn");
+
+const cancelBtn =
+    document.getElementById("cancelBtn");
+
+const wheel =
+    document.getElementById("wheel");
+
+const wheelSelector =
+    document.getElementById("wheelSelector");
+
+const brightness =
+    document.getElementById("brightness");
+
+const brightnessValue =
+    document.getElementById("brightnessValue");
+
+const currentSwatch =
+    document.getElementById("currentSwatch");
+
+const colorName =
+    document.getElementById("colorName");
+
+const hexValue =
+    document.getElementById("hexValue");
+
+
+/* ==========================================
+   COLOR HELPERS
+========================================== */
+
+function clamp(value,min,max){
+    return Math.max(min,Math.min(max,value));
+}
+
+function hexToRgb(hex){
+
+    hex = hex.replace("#","");
+
+    return {
+        r:parseInt(hex.substring(0,2),16),
+        g:parseInt(hex.substring(2,4),16),
+        b:parseInt(hex.substring(4,6),16)
+    };
+}
+
+function rgbToHex(r,g,b){
+
+    return "#" + [r,g,b]
+        .map(v =>
+            Math.round(v)
+                .toString(16)
+                .padStart(2,"0")
+        )
+        .join("");
+}
+
+function rgbToHsv(r,g,b){
+
+    r/=255;
+    g/=255;
+    b/=255;
+
+    const max =
+        Math.max(r,g,b);
+
+    const min =
+        Math.min(r,g,b);
+
+    const d=max-min;
+
+    let h=0;
+
+    if(d!==0){
+
+        if(max===r){
+            h=((g-b)/d)%6;
+        }
+        else if(max===g){
+            h=(b-r)/d+2;
+        }
+        else{
+            h=(r-g)/d+4;
+        }
+
+        h*=60;
+
+        if(h<0) h+=360;
+    }
+
+    const s =
+        max===0 ? 0 : d/max;
+
+    return {
+        h,
+        s:s*100,
+        v:max*100
+    };
+}
+
+function hsvToHex(h,s,v){
+
+    s/=100;
+    v/=100;
+
+    const c=v*s;
+
+    const x=
+        c*(1-Math.abs((h/60)%2-1));
+
+    const m=v-c;
+
+    let r=0;
+    let g=0;
+    let b=0;
+
+    if(h<60){
+        r=c; g=x;
+    }
+    else if(h<120){
+        r=x; g=c;
+    }
+    else if(h<180){
+        g=c; b=x;
+    }
+    else if(h<240){
+        g=x; b=c;
+    }
+    else if(h<300){
+        r=x; b=c;
+    }
+    else{
+        r=c; b=x;
+    }
+
+    return rgbToHex(
+        (r+m)*255,
+        (g+m)*255,
+        (b+m)*255
+    );
+}
+
+function colorDistance(a,b){
+
+    const A=hexToRgb(a);
+    const B=hexToRgb(b);
+
+    const dr=A.r-B.r;
+    const dg=A.g-B.g;
+    const db=A.b-B.b;
+
+    return Math.sqrt(
+        dr*dr+dg*dg+db*db
+    );
+}
+
+
+/* ==========================================
+   COLOR NAMES
+========================================== */
+
+const namedColors = [
+    ["WHITE","#ffffff"],
+    ["BLACK","#000000"],
+    ["RED","#ff0000"],
+    ["YELLOW","#ffff00"],
+    ["BLUE","#0000ff"],
+    ["ORANGE","#ff8000"],
+    ["GREEN","#00b050"],
+    ["PURPLE","#8a2be2"]
+];
+
+function getColorName(color){
+
+    const clean=color.toLowerCase();
+
+    for(const item of namedColors){
+
+        if(clean===item[1]){
+            return item[0];
+        }
+    }
+
+    let closest="MIXED COLOR";
+    let smallest=Infinity;
+
+    for(const item of namedColors){
+
+        const d =
+            colorDistance(clean,item[1]);
+
+        if(d<smallest && d<45){
+
+            smallest=d;
+            closest=item[0];
+        }
+    }
+
+    return closest;
+}
+
+
+/* ==========================================
+   PAINT MIXING
+========================================== */
+
+function mixColors(colorA,colorB){
+
+    colorA=colorA.toLowerCase();
+    colorB=colorB.toLowerCase();
+
+    if(colorA===colorB){
+        return colorA;
+    }
+
+    const primaryMixes = {
+        "#ff0000|#ffff00":"#ff8000",
+        "#ffff00|#ff0000":"#ff8000",
+
+        "#ffff00|#0000ff":"#00b050",
+        "#0000ff|#ffff00":"#00b050",
+
+        "#0000ff|#ff0000":"#8a2be2",
+        "#ff0000|#0000ff":"#8a2be2"
+    };
+
+    const key=colorA+"|"+colorB;
+
+    if(primaryMixes[key]){
+        return primaryMixes[key];
+    }
+
+    const A=hexToRgb(colorA);
+    const B=hexToRgb(colorB);
+
+    /* White = tint */
+    if(colorA==="#ffffff"){
+
+        return rgbToHex(
+            (B.r+255)/2,
+            (B.g+255)/2,
+            (B.b+255)/2
+        );
+    }
+
+    if(colorB==="#ffffff"){
+
+        return rgbToHex(
+            (A.r+255)/2,
+            (A.g+255)/2,
+            (A.b+255)/2
+        );
+    }
+
+    /* Black = shade */
+    if(colorA==="#000000"){
+
+        return rgbToHex(
+            A.r*0.5+B.r*0.5,
+            A.g*0.5+B.g*0.5,
+            A.b*0.5+B.b*0.5
+        );
+    }
+
+    if(colorB==="#000000"){
+
+        return rgbToHex(
+            A.r*0.5+B.r*0.5,
+            A.g*0.5+B.g*0.5,
+            A.b*0.5+B.b*0.5
+        );
+    }
+
+    /*
+      Lightweight pigment-style approximation.
+      No expensive calculations.
+    */
+
+    const ar=1-A.r/255;
+    const ag=1-A.g/255;
+    const ab=1-A.b/255;
+
+    const br=1-B.r/255;
+    const bg=1-B.g/255;
+    const bb=1-B.b/255;
+
+    const r=1-(ar+br)/2;
+    const g=1-(ag+bg)/2;
+    const b=1-(ab+bb)/2;
+
+    return rgbToHex(
+        r*255,
+        g*255,
+        b*255
+    );
+}
+
+
+/* ==========================================
+   ONE CREATION
+========================================== */
+
+function createOne(
+    x,
+    y,
+    size=MIN_SIZE,
+    color=DEFAULT_COLOR
+){
+
+    const element=
+        document.createElement("div");
+
+    element.className="one";
+
+    document.body.appendChild(element);
+
+    const one={
+        x,
+        y,
+        targetX:x,
+        targetY:y,
+        size,
+        color,
+        element,
+        lastTrailX:x,
+        lastTrailY:y
+    };
+
+    ones.push(one);
+
+    updateOne(one);
+
+    return one;
+}
+
+
+/* ==========================================
+   VISUAL UPDATE
+========================================== */
+
+function updateOne(one){
+
+    one.element.style.left =
+        one.x+"px";
+
+    one.element.style.top =
+        one.y+"px";
+
+    one.element.style.width =
+        one.size+"px";
+
+    one.element.style.height =
+        one.size+"px";
+
+    one.element.style.background =
+        one.color;
+
+    one.element.style.boxShadow =
+        `
+        0 0 8px ${one.color},
+        0 0 18px ${one.color},
+        0 0 35px ${one.color}
+        `;
+}
+
+
+/* ==========================================
+   TRAIL
+========================================== */
+
+function createTrail(one){
+
+    const trail=
+        document.createElement("div");
+
+    trail.className="trail";
+
+    trail.style.left=
+        one.x+"px";
+
+    trail.style.top=
+        one.y+"px";
+
+    trail.style.background=
+        one.color;
+
+    trail.style.boxShadow=
+        `0 0 7px ${one.color}`;
+
+    document.body.appendChild(trail);
+
+    setTimeout(
+        ()=>trail.remove(),
+        900
+    );
+}
+
+
+/* ==========================================
+   DIRECTIONAL SPLIT
+========================================== */
+
+function splitOne(
+    one,
+    touchX,
+    touchY
+){
+
+    if(!one) return;
+
+    let dx=
+        touchX-one.x;
+
+    let dy=
+        touchY-one.y;
+
+    const distanceSq=
+        dx*dx+dy*dy;
+
+    if(distanceSq<1){
+
+        dx=1;
+        dy=0;
+
+    }else{
+
+        const distance=
+            Math.sqrt(distanceSq);
+
+        dx/=distance;
+        dy/=distance;
+    }
+
+    const newOne=
+        createOne(
+            one.x+dx*45,
+            one.y+dy*45,
+            MIN_SIZE,
+            one.color
+        );
+
+    selectedOne=newOne;
+}
+
+
+/* ==========================================
+   MERGE
+========================================== */
+
+function createMergePulse(
+    x,
+    y,
+    color
+){
+
+    const pulse=
+        document.createElement("div");
+
+    pulse.className="merge-pulse";
+
+    pulse.style.left=x+"px";
+    pulse.style.top=y+"px";
+
+    pulse.style.background=color;
+
+    document.body.appendChild(pulse);
+
+    setTimeout(
+        ()=>pulse.remove(),
+        700
+    );
+}
+
+function mergeOnes(a,b){
+
+    if(!a || !b) return;
+
+    const x=(a.x+b.x)/2;
+    const y=(a.y+b.y)/2;
+
+    const size=
+        Math.min(
+            MAX_SIZE,
+            a.size+b.size
+        );
+
+    const color=
+        mixColors(
+            a.color,
+            b.color
+        );
+
+    createMergePulse(
+        x,
+        y,
+        color
+    );
+
+    a.element.remove();
+    b.element.remove();
+
+    ones=ones.filter(
+        one=>one!==a && one!==b
+    );
+
+    const merged=
+        createOne(
+            x,
+            y,
+            size,
+            color
+        );
+
+    selectedOne=merged;
+}
+
+
+/* ==========================================
+   MAGNETISM
+========================================== */
+
+function applyMagnetism(){
+
+    for(let i=0;i<ones.length;i++){
+
+        for(let j=i+1;j<ones.length;j++){
+
+            const a=ones[i];
+            const b=ones[j];
+
+            const dx=b.x-a.x;
+            const dy=b.y-a.y;
+
+            const distanceSq=
+                dx*dx+dy*dy;
+
+            if(
+                distanceSq<=0 ||
+                distanceSq>
+                MAGNETIC_DISTANCE_SQ
+            ){
+                continue;
+            }
+
+            const distance=
+                Math.sqrt(distanceSq);
+
+            const difference=
+                Math.abs(
+                    a.size-b.size
+                );
+
+            if(difference<=0){
+                continue;
+            }
+
+            const larger=
+                a.size>b.size ? a:b;
+
+            const smaller=
+                a.size>b.size ? b:a;
+
+            const directionX=
+                (smaller.x-larger.x)/
+                distance;
+
+            const directionY=
+                (smaller.y-larger.y)/
+                distance;
+
+            const distanceFactor=
+                1-
+                distance/
+                MAGNETIC_DISTANCE;
+
+            const sizeFactor=
+                difference/
+                MAX_SIZE;
+
+            const force=
+                MAGNETIC_STRENGTH*
+                distanceFactor*
+                sizeFactor;
+
+            smaller.targetX +=
+                directionX*
+                force*
+                100;
+
+            smaller.targetY +=
+                directionY*
+                force*
+                100;
+        }
+    }
+}
+
+
+/* ==========================================
+   MAIN LOOP
+========================================== */
+
+function gameLoop(){
+
+    applyMagnetism();
+
+    for(const one of ones){
+
+        if(
+            isHolding &&
+            selectedOne===one
+        ){
+
+            one.size=
+                Math.min(
+                    MAX_SIZE,
+                    one.size+0.5
+                );
+        }
+
+        /*
+          Exact original ONE movement.
+        */
+        one.x +=
+            (one.targetX-one.x)*0.10;
+
+        one.y +=
+            (one.targetY-one.y)*0.10;
+
+        const dx=
+            one.x-one.lastTrailX;
+
+        const dy=
+            one.y-one.lastTrailY;
+
+        if(
+            dx*dx+dy*dy>=
+            TRAIL_DISTANCE_SQ
+        ){
+
+            createTrail(one);
+
+            one.lastTrailX=
+                one.x;
+
+            one.lastTrailY=
+                one.y;
+        }
+
+        updateOne(one);
+    }
+
+    /*
+      Merge check.
+    */
+    for(let i=0;i<ones.length;i++){
+
+        for(let j=i+1;j<ones.length;j++){
+
+            const a=ones[i];
+            const b=ones[j];
+
+            const dx=
+                a.x-b.x;
+
+            const dy=
+                a.y-b.y;
+
+            if(
+                dx*dx+dy*dy<=
+                MERGE_DISTANCE_SQ
+            ){
+
+                mergeOnes(a,b);
+
+                requestAnimationFrame(
+                    gameLoop
+                );
+
+                return;
+            }
+        }
+    }
+
+    requestAnimationFrame(gameLoop);
+}
+
+
+/* ==========================================
+   GAME TOUCH
+========================================== */
+
+document.addEventListener(
+    "pointerdown",
+    event=>{
+
+        if(colorPanel.classList.contains("open")){
+            return;
+        }
+
+        if(
+            event.target.closest("button")
+        ){
+            return;
+        }
+
+        event.preventDefault();
+
+        const x=event.clientX;
+        const y=event.clientY;
+
+        let closest=null;
+        let closestDistance=Infinity;
+
+        for(const one of ones){
+
+            const dx=
+                x-one.x;
+
+            const dy=
+                y-one.y;
+
+            const d=
+                dx*dx+dy*dy;
+
+            if(d<closestDistance){
+
+                closestDistance=d;
+                closest=one;
+            }
+        }
+
+        selectedOne=closest;
+        isHolding=true;
+
+        const now=
+            performance.now();
+
+        if(
+            now-lastTapTime<=
+            DOUBLE_TAP_TIME
+        ){
+
+            splitOne(
+                selectedOne,
+                x,
+                y
+            );
+
+            lastTapTime=0;
+
+        }else{
+
+            lastTapTime=now;
+
+            if(selectedOne){
+
+                selectedOne.targetX=x;
+                selectedOne.targetY=y;
+            }
+        }
+    },
+    {passive:false}
+);
+
+document.addEventListener(
+    "pointermove",
+    event=>{
+
+        if(
+            colorPanel.classList.contains("open")
+        ){
+            return;
+        }
+
+        if(
+            !isHolding ||
+            !selectedOne
+        ){
+            return;
+        }
+
+        event.preventDefault();
+
+        selectedOne.targetX=
+            event.clientX;
+
+        selectedOne.targetY=
+            event.clientY;
+    },
+    {passive:false}
+);
+
+document.addEventListener(
+    "pointerup",
+    ()=>{
+        isHolding=false;
+    }
+);
+
+document.addEventListener(
+    "pointercancel",
+    ()=>{
+        isHolding=false;
+    }
+);
+
+
+/* ==========================================
+   COLOR PICKER
+   CSS WHEEL — NO CANVAS
+========================================== */
+
+function updatePicker(){
+
+    const rect=
+        wheel.getBoundingClientRect();
+
+    const centerX=
+        rect.width/2;
+
+    const centerY=
+        rect.height/2;
+
+    /*
+      Hue position around the wheel.
+    */
+
+    const angle=
+        pickerHue*
+        Math.PI/
+        180;
+
+    /*
+      Saturation controls distance
+      from the center.
+    */
+
+    const radius=
+        pickerSaturation*
+        Math.min(
+            rect.width,
+            rect.height
+        )/
+        2;
+
+    const x=
+        centerX+
+        Math.sin(angle)*
+        radius;
+
+    const y=
+        centerY-
+        Math.cos(angle)*
+        radius;
+
+    wheelSelector.style.left=
+        x+"px";
+
+    wheelSelector.style.top=
+        y+"px";
+
+    const color=
+        hsvToHex(
+            pickerHue,
+            pickerSaturation,
+            pickerBrightness
+        );
+
+    currentSwatch.style.background=
+        color;
+
+    hexValue.textContent=
+        color.toUpperCase();
+
+    colorName.textContent=
+        getColorName(color);
+
+    if(selectedOne){
+
+        selectedOne.color=color;
+
+        updateOne(selectedOne);
+    }
+
+    brightnessValue.textContent=
+        Math.round(
+            pickerBrightness
+        )+"%";
+}
+
+
+/* ==========================================
+   WHEEL INPUT
+========================================== */
+
+function pickFromWheel(
+    event
+){
+
+    const rect=
+        wheel.getBoundingClientRect();
+
+    const x=
+        event.clientX-
+        rect.left-
+        rect.width/2;
+
+    const y=
+        event.clientY-
+        rect.top-
+        rect.height/2;
+
+    const radius=
+        Math.sqrt(
+            x*x+y*y
+        );
+
+    const maxRadius=
+        rect.width/2;
+
+    const saturation=
+        clamp(
+            radius/maxRadius,
+            0,
+            1
+        );
+
+    /*
+      Angle:
+      red starts at top.
+    */
+
+    let angle=
+        Math.atan2(x,-y)*
+        180/
+        Math.PI;
+
+    if(angle<0){
+        angle+=360;
+    }
+
+    pickerHue=angle;
+
+    pickerSaturation=
+        saturation*100;
+
+    updatePicker();
+}
+
+let draggingWheel=false;
+
+wheel.addEventListener(
+    "pointerdown",
+    event=>{
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        draggingWheel=true;
+
+        wheel.setPointerCapture(
+            event.pointerId
+        );
+
+        pickFromWheel(event);
+    },
+    {passive:false}
+);
+
+wheel.addEventListener(
+    "pointermove",
+    event=>{
+
+        if(!draggingWheel){
+            return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        pickFromWheel(event);
+    },
+    {passive:false}
+);
+
+wheel.addEventListener(
+    "pointerup",
+    event=>{
+
+        draggingWheel=false;
+
+        try{
+            wheel.releasePointerCapture(
+                event.pointerId
+            );
+        }catch(e){}
+    }
+);
+
+wheel.addEventListener(
+    "pointercancel",
+    ()=>{
+        draggingWheel=false;
+    }
+);
+
+
+/* ==========================================
+   BRIGHTNESS
+========================================== */
+
+brightness.addEventListener(
+    "input",
+    event=>{
+
+        event.stopPropagation();
+
+        pickerBrightness=
+            Number(event.target.value);
+
+        updatePicker();
+    }
+);
+
+
+/* ==========================================
+   OPEN COLOR PANEL
+========================================== */
+
+function openColorPanel(){
+
+    if(!selectedOne){
+
+        selectedOne=
+            ones[0] || null;
+    }
+
+    if(!selectedOne){
+        return;
+    }
+
+    pickerStartColor=
+        selectedOne.color;
+
+    const rgb=
+        hexToRgb(
+            selectedOne.color
+        );
+
+    const hsv=
+        rgbToHsv(
+            rgb.r,
+            rgb.g,
+            rgb.b
+        );
+
+    pickerHue=hsv.h;
+    pickerSaturation=hsv.s;
+    pickerBrightness=hsv.v;
+
+    brightness.value=
+        pickerBrightness;
+
+    updatePicker();
+
+    colorPanel.classList.add("open");
+}
+
+
+/* ==========================================
+   CLOSE
+========================================== */
+
+function closeColorPanel(){
+
+    colorPanel.classList.remove("open");
+}
+
+
+/* ==========================================
+   COLORS BUTTON
+========================================== */
+
+colorsBtn.addEventListener(
+    "pointerdown",
+    event=>{
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        openColorPanel();
+    }
+);
+
+
+/* ==========================================
+   DONE
+========================================== */
+
+doneBtn.addEventListener(
+    "pointerdown",
+    event=>{
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        closeColorPanel();
+    }
+);
+
+
+/* ==========================================
+   CANCEL
+========================================== */
+
+cancelBtn.addEventListener(
+    "pointerdown",
+    event=>{
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        if(selectedOne){
+
+            selectedOne.color=
+                pickerStartColor;
+
+            updateOne(selectedOne);
+        }
+
+        closeColorPanel();
+    }
+);
+
+
+/* ==========================================
+   QUICK COLORS
+========================================== */
+
+document
+.querySelectorAll(".quick")
+.forEach(button=>{
+
+    button.addEventListener(
+        "pointerdown",
+        event=>{
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            const color=
+                button.dataset.color;
+
+            const rgb=
+                hexToRgb(color);
+
+            const hsv=
+                rgbToHsv(
+                    rgb.r,
+                    rgb.g,
+                    rgb.b
+                );
+
+            pickerHue=hsv.h;
+            pickerSaturation=hsv.s;
+            pickerBrightness=hsv.v;
+
+            brightness.value=
+                pickerBrightness;
+
+            updatePicker();
+        }
+    );
+});
+
+
+/* ==========================================
+   RESET
+========================================== */
+
+function resetGame(){
+
+    for(const one of ones){
+
+        one.element.remove();
+    }
+
+    ones=[];
+
+    document
+    .querySelectorAll(".trail,.merge-pulse")
+    .forEach(element=>{
+        element.remove();
+    });
+
+    selectedOne=null;
+    isHolding=false;
+    lastTapTime=0;
+
+    closeColorPanel();
+
+    createOne(
+        window.innerWidth/2,
+        window.innerHeight/2,
+        MIN_SIZE,
+        DEFAULT_COLOR
+    );
+}
+
+resetBtn.addEventListener(
+    "pointerdown",
+    event=>{
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        resetGame();
+    }
+);
+
+
+/* ==========================================
+   START
+========================================== */
+
+createOne(
+    window.innerWidth/2,
+    window.innerHeight/2,
+    MIN_SIZE,
+    DEFAULT_COLOR
+);
+
+requestAnimationFrame(gameLoop);
+
+</script>
+
+</body>
+</html>
