@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width,
+               initial-scale=1.0,
+               maximum-scale=1.0,
+               user-scalable=no,
+               viewport-fit=cover">
+
+<title>ONE — Directional Split Ultra Lite</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+
+    background: #000;
+
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/* =========================================
+   ULTRA-LIGHT ONE
+========================================= */
+
+.one {
+    position: absolute;
+
+    border-radius: 50%;
+
+    background: #fff;
+
+    transform:
+        translate3d(-50%, -50%, 0);
+
+    pointer-events: none;
+
+    /*
+       ONE simple glow instead of the
+       five-layer MASTER glow.
+    */
+
+    box-shadow:
+        0 0 22px rgba(255,255,255,.8);
+}
+
+
+/* =========================================
+   LIGHT TRAIL
+========================================= */
+
+.trail {
+    position: absolute;
+
+    width: 4px;
+    height: 4px;
+
+    border-radius: 50%;
+
+    background: #fff;
+
+    pointer-events: none;
+
+    opacity: .65;
+
+    animation:
+        trailFade 900ms linear forwards;
+}
+
+@keyframes trailFade {
+
+    from {
+        opacity: .65;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
+
+/* =========================================
+   RESET
+========================================= */
+
+#reset {
+
+    position: fixed;
+
+    top: 14px;
+    right: 14px;
+
+    z-index: 100;
+
+    padding: 8px 13px;
+
+    border: 1px solid
+        rgba(255,255,255,.18);
+
+    border-radius: 18px;
+
+    background:
+        rgba(0,0,0,.7);
+
+    color: #fff;
+
+    font-size: 11px;
+
+    letter-spacing: 1px;
+
+    touch-action: manipulation;
+}
+</style>
+</head>
+
+<body>
+
+<button id="reset">RESET</button>
+
+<script>
+
+/* =================================================
+   ONE — DIRECTIONAL SPLIT ULTRA LITE
+
+   MASTER MECHANICS
+   +
+   DIRECTIONAL SPLIT
+
+   Optimized for:
+   - battery
+   - GPU
+   - CPU
+   - fewer DOM operations
+   - less memory
+================================================= */
+
+
+/* =========================================
+   CONSTANTS
+========================================= */
+
+const MIN_SIZE = 34;
+const MAX_SIZE = 180;
+
+const DOUBLE_TAP_TIME = 350;
+
+const TRAIL_DISTANCE = 35;
+const TRAIL_DISTANCE_SQ =
+    TRAIL_DISTANCE * TRAIL_DISTANCE;
+
+const MERGE_DISTANCE = 20;
+const MERGE_DISTANCE_SQ =
+    MERGE_DISTANCE * MERGE_DISTANCE;
+
+const MAGNETIC_DISTANCE = 180;
+const MAGNETIC_DISTANCE_SQ =
+    MAGNETIC_DISTANCE * MAGNETIC_DISTANCE;
+
+const MAGNETIC_STRENGTH = 0.045;
+
+
+/* =========================================
+   STATE
+========================================= */
+
+let ones = [];
+
+let selectedOne = null;
+
+let isHolding = false;
+
+let lastTapTime = 0;
+
+
+/* =========================================
+   CREATE ONE
+========================================= */
+
+function createOne(x, y, size) {
+
+    const element =
+        document.createElement("div");
+
+    element.className = "one";
+
+    element.style.left = x + "px";
+    element.style.top = y + "px";
+
+    element.style.width = size + "px";
+    element.style.height = size + "px";
+
+    document.body.appendChild(element);
+
+
+    const one = {
+
+        x,
+        y,
+
+        targetX: x,
+        targetY: y,
+
+        size,
+
+        element,
+
+        trailX: x,
+        trailY: y
+    };
+
+
+    ones.push(one);
+
+    return one;
+}
+
+
+/* =========================================
+   UPDATE ONE
+========================================= */
+
+function updateOne(one) {
+
+    /*
+       MASTER movement.
+       DO NOT CHANGE.
+    */
+
+    one.x +=
+        (one.targetX - one.x) * 0.10;
+
+    one.y +=
+        (one.targetY - one.y) * 0.10;
+
+
+    /*
+       Hold-to-grow.
+    */
+
+    if (
+        one === selectedOne &&
+        isHolding
+    ) {
+
+        if (one.size < MAX_SIZE) {
+
+            one.size += 0.5;
+
+            if (one.size > MAX_SIZE) {
+                one.size = MAX_SIZE;
+            }
+
+            /*
+               Only update dimensions
+               when size actually changes.
+            */
+
+            const size =
+                one.size + "px";
+
+            one.element.style.width = size;
+            one.element.style.height = size;
+        }
+    }
+
+
+    /*
+       Position update.
+    */
+
+    one.element.style.transform =
+        "translate3d(-50%, -50%, 0)";
+
+    one.element.style.left =
+        one.x + "px";
+
+    one.element.style.top =
+        one.y + "px";
+
+
+    /*
+       Lightweight trail distance test.
+    */
+
+    const dx =
+        one.x - one.trailX;
+
+    const dy =
+        one.y - one.trailY;
+
+    if (
+        dx * dx +
+        dy * dy >=
+        TRAIL_DISTANCE_SQ
+    ) {
+
+        createTrail(
+            one.x,
+            one.y
+        );
+
+        one.trailX = one.x;
+        one.trailY = one.y;
+    }
+}
+
+
+/* =========================================
+   TRAIL
+========================================= */
+
+function createTrail(x, y) {
+
+    const trail =
+        document.createElement("div");
+
+    trail.className = "trail";
+
+    trail.style.left =
+        x + "px";
+
+    trail.style.top =
+        y + "px";
+
+    document.body.appendChild(trail);
+
+
+    /*
+       Self-delete.
+       No trail array required.
+    */
+
+    setTimeout(
+        () => trail.remove(),
+        900
+    );
+}
+
+
+/* =========================================
+   FIND CLOSEST ONE
+========================================= */
+
+function closestOne(x, y) {
+
+    let result = null;
+
+    let bestDistance =
+        Infinity;
+
+
+    for (
+        let i = 0;
+        i < ones.length;
+        i++
+    ) {
+
+        const one = ones[i];
+
+        const dx =
+            one.x - x;
+
+        const dy =
+            one.y - y;
+
+        const distance =
+            dx * dx +
+            dy * dy;
+
+
+        if (
+            distance <
+            bestDistance
+        ) {
+
+            bestDistance =
+                distance;
+
+            result = one;
+        }
+    }
+
+    return result;
+}
+
+
+/* =========================================
+   DIRECTIONAL SPLIT
+========================================= */
+
+function splitOne(
+    one,
+    touchX,
+    touchY
+) {
+
+    if (!one) return;
+
+
+    let dx =
+        touchX - one.x;
+
+    let dy =
+        touchY - one.y;
+
+
+    const distanceSq =
+        dx * dx +
+        dy * dy;
+
+
+    /*
+       Prevent division by zero.
+    */
+
+    if (distanceSq < 1) {
+
+        dx = 1;
+        dy = 0;
+
+    } else {
+
+        const distance =
+            Math.sqrt(distanceSq);
+
+        dx /= distance;
+        dy /= distance;
+    }
+
+
+    /*
+       New ONE appears in the
+       direction of the double tap.
+    */
+
+    const newOne =
+        createOne(
+            one.x + dx * 45,
+            one.y + dy * 45,
+            MIN_SIZE
+        );
+
+
+    /*
+       New ONE becomes selected.
+    */
+
+    selectedOne = newOne;
+
+    newOne.targetX =
+        newOne.x;
+
+    newOne.targetY =
+        newOne.y;
+}
+
+
+/* =========================================
+   MERGE
+========================================= */
+
+function mergeOnes(a, b) {
+
+    const x =
+        (a.x + b.x) * 0.5;
+
+    const y =
+        (a.y + b.y) * 0.5;
+
+
+    const size =
+        Math.min(
+            MAX_SIZE,
+            a.size + b.size
+        );
+
+
+    /*
+       Remove old elements.
+    */
+
+    a.element.remove();
+    b.element.remove();
+
+
+    /*
+       Remove from array.
+    */
+
+    const ia =
+        ones.indexOf(a);
+
+    if (ia !== -1) {
+        ones.splice(ia, 1);
+    }
+
+
+    const ib =
+        ones.indexOf(b);
+
+    if (ib !== -1) {
+        ones.splice(ib, 1);
+    }
+
+
+    /*
+       Create merged ONE.
+    */
+
+    selectedOne =
+        createOne(
+            x,
+            y,
+            size
+        );
+}
+
+
+/* =========================================
+   MAGNETISM
+========================================= */
+
+function magnetism() {
+
+    const count =
+        ones.length;
+
+
+    for (
+        let i = 0;
+        i < count;
+        i++
+    ) {
+
+        const a = ones[i];
+
+
+        for (
+            let j = i + 1;
+            j < count;
+            j++
+        ) {
+
+            const b = ones[j];
+
+
+            const dx =
+                b.x - a.x;
+
+            const dy =
+                b.y - a.y;
+
+            const distanceSq =
+                dx * dx +
+                dy * dy;
+
+
+            /*
+               MERGE
+            */
+
+            if (
+                distanceSq <=
+                MERGE_DISTANCE_SQ
+            ) {
+
+                mergeOnes(a, b);
+
+                return;
+            }
+
+
+            /*
+               MAGNETISM
+            */
+
+            if (
+                distanceSq >
+                MAGNETIC_DISTANCE_SQ
+            ) {
+                continue;
+            }
+
+
+            if (a.size === b.size) {
+                continue;
+            }
+
+
+            const distance =
+                Math.sqrt(distanceSq);
+
+
+            if (distance === 0) {
+                continue;
+            }
+
+
+            let bigger;
+            let smaller;
+
+
+            if (
+                a.size >
+                b.size
+            ) {
+
+                bigger = a;
+                smaller = b;
+
+            } else {
+
+                bigger = b;
+                smaller = a;
+            }
+
+
+            /*
+               Direction from bigger
+               toward smaller.
+            */
+
+            const nx =
+                (smaller.x - bigger.x)
+                / distance;
+
+            const ny =
+                (smaller.y - bigger.y)
+                / distance;
+
+
+            const distanceFactor =
+                1 -
+                distance /
+                MAGNETIC_DISTANCE;
+
+
+            const sizeFactor =
+                Math.abs(
+                    a.size - b.size
+                ) / MAX_SIZE;
+
+
+            const force =
+                MAGNETIC_STRENGTH *
+                distanceFactor *
+                sizeFactor;
+
+
+            /*
+               Change target only.
+               Actual movement remains
+               MASTER 0.10 interpolation.
+            */
+
+            smaller.targetX +=
+                nx * force * 100;
+
+            smaller.targetY +=
+                ny * force * 100;
+        }
+    }
+}
+
+
+/* =========================================
+   TOUCH START
+========================================= */
+
+document.addEventListener(
+    "touchstart",
+    function(event) {
+
+        event.preventDefault();
+
+
+        const touch =
+            event.touches[0];
+
+
+        const x =
+            touch.clientX;
+
+        const y =
+            touch.clientY;
+
+
+        const now =
+            performance.now();
+
+
+        /*
+           DOUBLE TAP
+        */
+
+        if (
+            now - lastTapTime <=
+            DOUBLE_TAP_TIME
+        ) {
+
+            if (selectedOne) {
+
+                splitOne(
+                    selectedOne,
+                    x,
+                    y
+                );
+            }
+
+
+            lastTapTime = 0;
+
+            isHolding = true;
+
+            return;
+        }
+
+
+        /*
+           NORMAL TOUCH
+        */
+
+        selectedOne =
+            closestOne(x, y);
+
+
+        if (selectedOne) {
+
+            selectedOne.targetX = x;
+            selectedOne.targetY = y;
+
+            isHolding = true;
+        }
+
+
+        lastTapTime = now;
+
+    },
+    { passive: false }
+);
+
+
+/* =========================================
+   TOUCH MOVE
+========================================= */
+
+document.addEventListener(
+    "touchmove",
+    function(event) {
+
+        event.preventDefault();
+
+
+        if (!selectedOne) {
+            return;
+        }
+
+
+        const touch =
+            event.touches[0];
+
+
+        selectedOne.targetX =
+            touch.clientX;
+
+        selectedOne.targetY =
+            touch.clientY;
+
+    },
+    { passive: false }
+);
+
+
+/* =========================================
+   TOUCH END
+========================================= */
+
+document.addEventListener(
+    "touchend",
+    function(event) {
+
+        event.preventDefault();
+
+        isHolding = false;
+
+    },
+    { passive: false }
+);
+
+
+/* =========================================
+   RESET
+========================================= */
+
+function resetGame() {
+
+    /*
+       Remove ONEs.
+    */
+
+    for (
+        let i = 0;
+        i < ones.length;
+        i++
+    ) {
+
+        ones[i].element.remove();
+    }
+
+
+    ones.length = 0;
+
+
+    /*
+       Remove trails.
+    */
+
+    document
+        .querySelectorAll(".trail")
+        .forEach(
+            trail => trail.remove()
+        );
+
+
+    selectedOne = null;
+
+    isHolding = false;
+
+    lastTapTime = 0;
+
+
+    /*
+       Original ONE.
+    */
+
+    createOne(
+        window.innerWidth * 0.5,
+        window.innerHeight * 0.5,
+        MIN_SIZE
+    );
+}
+
+
+/* =========================================
+   RESET BUTTON
+========================================= */
+
+document
+    .getElementById("reset")
+    .addEventListener(
+        "touchstart",
+        function(event) {
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            resetGame();
+
+        },
+        { passive: false }
+    );
+
+
+/* =========================================
+   MAIN LOOP
+========================================= */
+
+function animate() {
+
+    /*
+       Only calculate magnetism
+       when there are multiple ONES.
+    */
+
+    if (ones.length > 1) {
+        magnetism();
+    }
+
+
+    /*
+       Update ONES.
+    */
+
+    for (
+        let i = 0;
+        i < ones.length;
+        i++
+    ) {
+
+        updateOne(ones[i]);
+    }
+
+
+    requestAnimationFrame(animate);
+}
+
+
+/* =========================================
+   START
+========================================= */
+
+resetGame();
+
+requestAnimationFrame(animate);
+
+</script>
+
+</body>
+</html>
