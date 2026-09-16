@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -6,12 +6,10 @@
 
 <title>ONE — One Thing. Infinite Possibilities.</title>
 
-<meta name="description"
-      content="ONE — One thing. Infinite possibilities. Explore minimalist games, interactive experiments, and ONE COLOR LAB.">
-
-<meta name="theme-color" content="#000000">
+<meta name="description" content="ONE — One thing. Infinite possibilities. Explore minimalist interactive games, experiments, and ONE COLOR LAB.">
 
 <style>
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -25,14 +23,9 @@ html {
 body {
     background: #000;
     color: #fff;
-    font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        Roboto,
-        Arial,
-        sans-serif;
-    overflow-x: hidden;
+    font-family: Arial, Helvetica, sans-serif;
+    min-height: 100vh;
+    line-height: 1.6;
 }
 
 a {
@@ -40,9 +33,7 @@ a {
     text-decoration: none;
 }
 
-/* =========================
-   HERO
-========================= */
+/* HERO */
 
 .hero {
     min-height: 100vh;
@@ -52,288 +43,179 @@ a {
     justify-content: center;
     text-align: center;
     padding: 40px 20px;
-    position: relative;
 }
 
-.one-light {
-    width: 110px;
-    height: 110px;
-    border-radius: 50%;
-    background: #fff;
+.logo {
+    font-size: clamp(100px, 30vw, 220px);
+    font-weight: 300;
+    letter-spacing: -12px;
+    line-height: 1;
+    color: #fff;
 
-    box-shadow:
-        0 0 12px #fff,
-        0 0 30px #fff,
-        0 0 60px rgba(255,255,255,.9),
-        0 0 100px rgba(255,255,255,.6),
-        0 0 150px rgba(255,255,255,.3);
-
-    margin-bottom: 55px;
-
-    animation: breathe 4s ease-in-out infinite;
-}
-
-@keyframes breathe {
-    0%, 100% {
-        transform: scale(1);
-        opacity: 1;
-    }
-
-    50% {
-        transform: scale(1.04);
-        opacity: .94;
-    }
-}
-
-.hero h1 {
-    font-size: clamp(64px, 20vw, 150px);
-    font-weight: 200;
-    letter-spacing: .08em;
-    line-height: .9;
+    text-shadow:
+        0 0 15px #fff,
+        0 0 35px #fff,
+        0 0 70px rgba(255,255,255,.8),
+        0 0 120px rgba(255,255,255,.45);
 }
 
 .tagline {
     margin-top: 30px;
-    font-size: clamp(16px, 4vw, 24px);
+    font-size: clamp(20px, 5vw, 32px);
     font-weight: 300;
-    letter-spacing: .12em;
-    color: #ccc;
+    letter-spacing: 1px;
 }
 
 .hero-description {
-    max-width: 560px;
-    margin-top: 22px;
-    color: #777;
-    font-size: 15px;
-    line-height: 1.7;
-}
-
-.scroll {
-    position: absolute;
-    bottom: 30px;
-    color: #555;
-    font-size: 11px;
-    letter-spacing: .2em;
-    text-transform: uppercase;
-}
-
-/* =========================
-   GENERAL
-========================= */
-
-section {
-    padding: 90px 20px;
-    max-width: 1100px;
-    margin: auto;
-}
-
-.section-label {
-    color: #666;
-    font-size: 11px;
-    letter-spacing: .25em;
-    text-transform: uppercase;
-    margin-bottom: 15px;
-}
-
-.section-title {
-    font-size: clamp(34px, 9vw, 64px);
-    font-weight: 300;
-    letter-spacing: .03em;
-}
-
-.section-intro {
-    max-width: 650px;
+    max-width: 600px;
     margin-top: 18px;
-    color: #888;
-    line-height: 1.7;
+    color: #aaa;
     font-size: 16px;
 }
 
-/* =========================
-   PLAY
-========================= */
+/* SECTIONS */
+
+section {
+    width: 100%;
+    max-width: 1100px;
+    margin: auto;
+    padding: 80px 20px;
+}
+
+.section-title {
+    font-size: 32px;
+    font-weight: 300;
+    margin-bottom: 12px;
+}
+
+.section-description {
+    color: #888;
+    margin-bottom: 35px;
+}
+
+/* GAMES */
 
 .games {
     display: grid;
-    grid-template-columns:
-        repeat(auto-fit, minmax(260px, 1fr));
-    gap: 18px;
-    margin-top: 45px;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
 }
 
 .game-card {
-    min-height: 240px;
+    display: block;
     border: 1px solid #222;
     background: #050505;
     padding: 30px;
-
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-
-    transition:
-        border-color .25s ease,
-        transform .25s ease,
-        background .25s ease;
+    border-radius: 18px;
+    transition: .25s ease;
 }
 
 .game-card:hover {
-    border-color: #555;
-    background: #0a0a0a;
-    transform: translateY(-4px);
+    border-color: #666;
+    transform: translateY(-3px);
 }
 
-.game-symbol {
-    width: 42px;
-    height: 42px;
+.game-icon {
+    width: 70px;
+    height: 70px;
     border-radius: 50%;
     background: #fff;
+    color: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    margin-bottom: 25px;
 
     box-shadow:
-        0 0 12px #fff,
-        0 0 25px rgba(255,255,255,.6);
+        0 0 15px #fff,
+        0 0 35px rgba(255,255,255,.7);
 }
 
 .game-card h3 {
-    margin-top: 25px;
-    font-size: 25px;
+    font-size: 22px;
     font-weight: 400;
+    margin-bottom: 10px;
 }
 
 .game-card p {
-    margin-top: 10px;
-    color: #777;
-    font-size: 14px;
-    line-height: 1.6;
+    color: #888;
+    margin-bottom: 20px;
 }
 
-.game-link {
-    margin-top: 30px;
+.game-card span {
     color: #fff;
-    font-size: 12px;
-    letter-spacing: .15em;
-    text-transform: uppercase;
+    font-size: 14px;
+    letter-spacing: 1px;
 }
 
-/* =========================
-   COLOR LAB
-========================= */
+/* COLOR LAB */
 
-.lab-section {
-    border-top: 1px solid #111;
-    border-bottom: 1px solid #111;
-}
-
-.lab-card {
-    margin-top: 45px;
-    padding: 35px 25px;
+.color-lab {
     border: 1px solid #222;
-
-    background:
-        radial-gradient(
-            circle at center,
-            #151515 0%,
-            #050505 45%,
-            #000 100%
-        );
-
+    border-radius: 20px;
+    padding: 40px 25px;
+    background: #050505;
     text-align: center;
 }
 
-.color-preview {
-    width: 150px;
-    height: 150px;
+.color-lab-circle {
+    width: 110px;
+    height: 110px;
     border-radius: 50%;
+    margin: 0 auto 30px;
 
     background:
-        linear-gradient(
-            135deg,
-            #ff0000,
-            #ffff00,
-            #0000ff
+        conic-gradient(
+            red,
+            yellow,
+            lime,
+            cyan,
+            blue,
+            magenta,
+            red
         );
 
-    margin: 0 auto 35px;
-
     box-shadow:
-        0 0 25px rgba(255,255,255,.15);
+        0 0 20px rgba(255,255,255,.3),
+        0 0 60px rgba(255,255,255,.15);
 }
-
-.lab-card h3 {
-    font-size: 30px;
-    font-weight: 300;
-}
-
-.lab-card p {
-    max-width: 550px;
-    margin: 15px auto 0;
-    color: #777;
-    line-height: 1.7;
-}
-
-/* =========================
-   BUTTON
-========================= */
 
 .button {
     display: inline-block;
-    margin-top: 30px;
-    padding: 14px 28px;
-
-    border: 1px solid #444;
-
-    color: #fff;
-    font-size: 12px;
-    letter-spacing: .16em;
-    text-transform: uppercase;
-
-    transition:
-        background .25s ease,
-        color .25s ease,
-        border-color .25s ease;
+    margin-top: 20px;
+    padding: 13px 25px;
+    border: 1px solid #555;
+    border-radius: 30px;
+    font-size: 14px;
+    transition: .25s ease;
 }
 
 .button:hover {
     background: #fff;
     color: #000;
-    border-color: #fff;
 }
 
-/* =========================
-   PHILOSOPHY
-========================= */
+/* PHILOSOPHY */
 
 .philosophy {
     text-align: center;
-    padding-top: 130px;
-    padding-bottom: 130px;
+    max-width: 750px;
 }
 
-.philosophy-mark {
-    font-size: 80px;
-    font-weight: 200;
-    margin-bottom: 30px;
-
-    text-shadow:
-        0 0 15px #fff,
-        0 0 35px rgba(255,255,255,.7);
-}
-
-.philosophy h2 {
-    font-size: clamp(30px, 7vw, 55px);
+.philosophy-text {
+    font-size: clamp(24px, 6vw, 42px);
     font-weight: 300;
+    line-height: 1.3;
+    margin-top: 30px;
 }
 
-.philosophy p {
-    max-width: 600px;
-    margin: 25px auto 0;
+.philosophy-small {
     color: #777;
-    line-height: 1.8;
+    margin-top: 25px;
 }
 
-/* =========================
-   FUTURE
-========================= */
+/* FUTURE */
 
 .future {
     text-align: center;
@@ -341,201 +223,138 @@ section {
 }
 
 .future p {
-    max-width: 600px;
-    margin: 20px auto 0;
     color: #777;
-    line-height: 1.7;
+    max-width: 600px;
+    margin: auto;
 }
 
-/* =========================
-   FOOTER
-========================= */
+/* FOOTER */
 
 footer {
+    text-align: center;
     padding: 50px 20px;
     border-top: 1px solid #111;
-
-    text-align: center;
-
     color: #555;
-    font-size: 12px;
-    letter-spacing: .08em;
+    font-size: 13px;
 }
 
-footer strong {
-    color: #aaa;
-    font-weight: 400;
+.footer-one {
+    color: #fff;
+    margin-bottom: 8px;
 }
 
-/* =========================
-   MOBILE
-========================= */
+/* MOBILE */
 
 @media (max-width: 600px) {
 
     section {
-        padding: 75px 18px;
-    }
-
-    .one-light {
-        width: 85px;
-        height: 85px;
-        margin-bottom: 45px;
-    }
-
-    .games {
-        grid-template-columns: 1fr;
+        padding: 65px 18px;
     }
 
     .game-card {
-        min-height: 220px;
+        padding: 25px;
     }
 
-    .lab-card {
-        padding: 30px 18px;
+    .logo {
+        letter-spacing: -7px;
     }
 
-    .color-preview {
-        width: 125px;
-        height: 125px;
-    }
 }
+
 </style>
 </head>
 
 <body>
 
-<!-- =========================
-     HERO
-========================= -->
+<!-- HERO -->
 
 <header class="hero">
 
-    <div class="one-light"></div>
+    <div class="logo">ONE</div>
 
-    <h1>ONE</h1>
-
-    <p class="tagline">
+    <div class="tagline">
         One thing. Infinite possibilities.
-    </p>
+    </div>
 
     <p class="hero-description">
-        Minimalist games, interactive experiments and
-        practical tools built around one simple idea:
-        how few rules can create how much possibility?
+        A minimalist interactive project exploring what can happen
+        when you start with just ONE.
     </p>
-
-    <div class="scroll">
-        Scroll to explore
-    </div>
 
 </header>
 
 
-<!-- =========================
-     PLAY
-========================= -->
+<!-- PLAY -->
 
-<section id="play">
+<section>
 
-    <div class="section-label">
-        Explore
-    </div>
+    <h2 class="section-title">PLAY</h2>
 
-    <h2 class="section-title">
-        Play
-    </h2>
-
-    <p class="section-intro">
-        Simple rules. Simple interactions.
-        Unexpected possibilities.
+    <p class="section-description">
+        Simple rules. Interactive worlds. Start with ONE.
     </p>
-
 
     <div class="games">
 
-        <!-- ONE MASTER V13 -->
+        <!-- ONE -->
 
         <a href="play/one.html" class="game-card">
 
-            <div>
-
-                <div class="game-symbol"></div>
-
-                <h3>ONE</h3>
-
-                <p>
-                    One glowing thing.
-                    Move it. Grow it. Split it.
-                    Bring it together again.
-                </p>
-
+            <div class="game-icon">
+                ONE
             </div>
 
-            <div class="game-link">
+            <h3>ONE</h3>
+
+            <p>
+                One thing. One interaction. Infinite possibilities.
+            </p>
+
+            <span>
                 Play →
-            </div>
+            </span>
 
         </a>
 
 
-        <!-- DIRECTIONAL -->
+        <!-- ONE DIRECTIONAL -->
+
+        <a href="play/directional.html" class="game-card">
+
+            <div class="game-icon">
+                ONE
+            </div>
+
+            <h3>ONE DIRECTIONAL</h3>
+
+            <p>
+                A directional splitting experiment.
+            </p>
+
+            <span>
+                Play →
+            </span>
+
+        </a>
+
+
+        <!-- ONE COLOR -->
 
         <div class="game-card">
 
-            <div>
-
-                <div class="game-symbol"></div>
-
-                <h3>ONE DIRECTIONAL</h3>
-
-                <p>
-                    A lightweight evolution of ONE,
-                    where the direction of your touch
-                    determines the split.
-                </p>
-
+            <div class="game-icon">
+                ONE
             </div>
 
-            <div class="game-link">
+            <h3>ONE COLOR</h3>
+
+            <p>
+                Explore color, mixing and interaction.
+            </p>
+
+            <span>
                 Coming soon
-            </div>
-
-        </div>
-
-
-        <!-- COLOR -->
-
-        <div class="game-card">
-
-            <div>
-
-                <div
-                    class="game-symbol"
-                    style="
-                        background:
-                        linear-gradient(
-                            135deg,
-                            #ff0000,
-                            #ffff00,
-                            #0000ff
-                        );
-                        box-shadow:none;
-                    ">
-                </div>
-
-                <h3>ONE COLOR</h3>
-
-                <p>
-                    Explore color through interaction.
-                    Mix, split, merge and discover.
-                </p>
-
-            </div>
-
-            <div class="game-link">
-                Coming soon
-            </div>
+            </span>
 
         </div>
 
@@ -544,41 +363,25 @@ footer strong {
 </section>
 
 
-<!-- =========================
-     COLOR LAB
-========================= -->
+<!-- COLOR LAB -->
 
-<section class="lab-section" id="color-lab">
+<section>
 
-    <div class="section-label">
-        Tool
-    </div>
+    <div class="color-lab">
 
-    <h2 class="section-title">
-        ONE COLOR LAB
-    </h2>
+        <div class="color-lab-circle"></div>
 
-    <p class="section-intro">
-        A practical digital workbench for painters.
-    </p>
+        <h2 class="section-title">
+            ONE COLOR LAB
+        </h2>
 
-
-    <div class="lab-card">
-
-        <div class="color-preview"></div>
-
-        <h3>
-            Choose. Mix. Adjust. Compare. Save.
-        </h3>
-
-        <p>
-            Experiment with paint combinations,
-            ratios and color recipes.
-            Build your own collection of useful mixes.
+        <p class="section-description">
+            A digital workbench for exploring paint,
+            color mixing, ratios and recipes.
         </p>
 
         <a href="#" class="button">
-            Open Color Lab
+            Open Color Lab →
         </a>
 
     </div>
@@ -586,62 +389,49 @@ footer strong {
 </section>
 
 
-<!-- =========================
-     PHILOSOPHY
-========================= -->
+<!-- PHILOSOPHY -->
 
 <section class="philosophy">
 
-    <div class="philosophy-mark">
-        ONE
-    </div>
-
-    <h2>
-        How few rules can create
-        how much possibility?
+    <h2 class="section-title">
+        THE IDEA
     </h2>
 
-    <p>
-        ONE is an ongoing collection of minimalist
-        interactive experiences. Each experiment
-        starts with something simple and asks what
-        can emerge from it.
+    <div class="philosophy-text">
+        How few rules can create
+        how much possibility?
+    </div>
+
+    <p class="philosophy-small">
+        ONE starts with simplicity and lets interaction create complexity.
     </p>
 
 </section>
 
 
-<!-- =========================
-     FUTURE
-========================= -->
+<!-- FUTURE -->
 
 <section class="future">
 
-    <div class="section-label">
-        Coming later
-    </div>
-
     <h2 class="section-title">
-        Mobile
+        MORE TO COME
     </h2>
 
     <p>
-        The ONE experiences begin on the web.
-        Mobile versions will follow as the project grows.
+        ONE is growing into a collection of interactive experiences,
+        experiments and tools — with mobile versions planned for the future.
     </p>
 
 </section>
 
 
-<!-- =========================
-     FOOTER
-========================= -->
+<!-- FOOTER -->
 
 <footer>
 
-    <strong>ONE</strong>
-
-    <br><br>
+    <div class="footer-one">
+        ONE
+    </div>
 
     One thing. Infinite possibilities.
 
